@@ -1,33 +1,19 @@
-import React from "react"
-import {
-  Box,
-  chakra,
-  Flex,
-  Heading,
-  List,
-  ListItem,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import type { StakingPage } from "@/lib/types"
 
-// SVG imports
+import ButtonDropdown from "@/components/ButtonDropdown"
 import {
   CautionProductGlyphIcon,
   GreenCheckProductGlyphIcon,
   WarningProductGlyphIcon,
-} from "../../icons/staking"
+} from "@/components/icons/staking"
+import Translation from "@/components/Translation"
+import { Flex, VStack } from "@/components/ui/flex"
+import { List, ListItem } from "@/components/ui/list"
 
-// Component imports
-import ButtonDropdown from "../../ButtonDropdown"
-import Translation from "../../Translation"
-import { trackCustomEvent } from "../../../utils/matomo"
-import { useStakingConsiderations } from "./use-staking-considerations"
+import { cn } from "@/lib/utils/cn"
+import { trackCustomEvent } from "@/lib/utils/matomo"
 
-const ChakraButtonDropdown = chakra(ButtonDropdown, {
-  baseStyle: {
-    hideFrom: "md",
-  },
-})
+import { useStakingConsiderations } from "@/hooks/useStakingConsiderations"
 
 const IndicatorGroup = ({
   label,
@@ -50,28 +36,20 @@ const IndicatorGroup = ({
     return <WarningProductGlyphIcon style={style} />
   }
   return (
-    <VStack
-      spacing={2}
-      flex={1}
-      width={{ base: "fit-content", sm: "max-content" }}
-    >
+    <VStack className="flex-1 gap-2">
       <IndicatorIcon style={styleObj} />
-      <Text
-        fontSize="xs"
-        textAlign="center"
-        width={{ base: "fit-content", sm: "max-content" }}
-      >
+      <p className="max-w-[10rem] text-center text-xs">
         <Translation id={label} />
-      </Text>
+      </p>
     </VStack>
   )
 }
 
-export interface IProps {
-  page: "solo" | "saas" | "pools"
+export type StakingConsiderationsProps = {
+  page: StakingPage
 }
 
-const StakingConsiderations: React.FC<IProps> = ({ page }) => {
+const StakingConsiderations = ({ page }: StakingConsiderationsProps) => {
   const {
     StyledSvg,
     caution,
@@ -79,7 +57,6 @@ const StakingConsiderations: React.FC<IProps> = ({ page }) => {
     dropdownLinks,
     handleSelection,
     indicatorSvgStyle,
-    selectionSvgStyle,
     title,
     valid,
     warning,
@@ -88,68 +65,38 @@ const StakingConsiderations: React.FC<IProps> = ({ page }) => {
   } = useStakingConsiderations({ page })
 
   return (
-    <Flex flexDir={{ base: "column", md: "row" }} gap={8}>
-      <ChakraButtonDropdown list={dropdownLinks} />
+    <Flex className="flex-col md:flex-row">
+      <ButtonDropdown list={dropdownLinks} className="mb-4 md:hidden" />
       {/* TODO: Improve a11y */}
-      <Box flex={1} hideBelow="md">
+      <div className="hidden flex-1 md:block">
         {!!pageData && (
-          <List m={0}>
+          <List className="m-0">
             {/* TODO: Make mobile responsive */}
             {pageData.map(({ title, matomo }, idx) => (
               <ListItem
                 key={idx}
-                onClick={(e) => {
+                onClick={() => {
                   handleSelection(idx)
                   trackCustomEvent(matomo)
                 }}
-                py={1}
-                px={2}
-                cursor="pointer"
-                h={8}
-                position="relative"
-                {...(idx === activeIndex
-                  ? {
-                      bg: "primary",
-                      color: "background",
-                      _after: {
-                        content: `''`,
-                        position: "absolute",
-                        height: 0,
-                        width: 0,
-                        top: 0,
-                        left: "100%",
-                        border: "1rem solid transparent",
-                        borderLeftColor: "primary",
-                      },
-                    }
-                  : { color: "primary" })}
+                className={cn(
+                  "transition-background relative mb-0 table h-8 w-full cursor-pointer p-3 duration-500 hover:bg-background-highlight hover:text-body",
+                  idx === activeIndex
+                    ? "bg-background-highlight text-body"
+                    : "text-primary"
+                )}
               >
                 {title}
               </ListItem>
             ))}
           </List>
         )}
-      </Box>
-      <Flex
-        alignItems="center"
-        flexDir="column"
-        bg="offBackground"
-        flex={2}
-        minH="410px"
-        p={6}
-      >
-        <StyledSvg style={selectionSvgStyle} />
-        <Heading
-          as="h3"
-          fontWeight={700}
-          fontSize="27px"
-          lineHeight={1.4}
-          mt={10}
-        >
-          {title}
-        </Heading>
-        <Text>{description}</Text>
-        <Flex gap={8} justifyContent="center" mt="auto">
+      </div>
+      <Flex className="min-h-[410px] flex-[2] flex-col items-center bg-background-highlight p-6">
+        <StyledSvg />
+        <h3 className="mt-10 text-2xl font-bold leading-[1.4]">{title}</h3>
+        <p>{description}</p>
+        <Flex className="mt-auto justify-center gap-8">
           {!!valid && (
             <IndicatorGroup
               label={valid}

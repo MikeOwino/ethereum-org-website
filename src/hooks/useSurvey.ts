@@ -1,14 +1,23 @@
+import path from "path"
+
 import { useMemo } from "react"
+import { useLocale } from "next-intl"
 
-const location = typeof window !== "undefined" ? window.location.href : ""
+import type { Lang } from "@/lib/types"
 
-export type Survey = {
-  url: string
-  prompt: string
-}
+import { SITE_URL } from "@/lib/constants"
 
-export const useSurvey = (feedbackSubmitted: boolean) =>
-  useMemo((): string | null => {
+import { usePathname } from "@/i18n/routing"
+
+export const useSurvey = (feedbackSubmitted: boolean) => {
+  const locale = useLocale()
+  const pathname = usePathname()
+  const { href: url } = new URL(
+    path.join(locale! as Lang, pathname || ""),
+    SITE_URL
+  )
+  return useMemo((): string | null => {
     if (!feedbackSubmitted) return null
-    return `https://iwokuhuz.paperform.co//?url=${location}`
-  }, [feedbackSubmitted, location])
+    return `https://ethereumorg.paperform.co//?url=${url}`
+  }, [feedbackSubmitted, url])
+}
